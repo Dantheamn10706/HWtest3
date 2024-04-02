@@ -24,12 +24,21 @@ namespace HWtest3
     public partial class Form1 : Form
     {
         public Point mouselocation;
+        public static bool isPauseUpating;     //Pauses updating the main window
         private int refreshRate = 50;  //refresh rate for the UI in ms.
-        static LibreHardwareMonitor.Hardware.Computer computer = new LibreHardwareMonitor.Hardware.Computer()
+        private MemoryData memData;    //Memory data
+
+        public static LibreHardwareMonitor.Hardware.Computer computer = new LibreHardwareMonitor.Hardware.Computer()
         {
             IsCpuEnabled = true,        // Enable CPU
             IsGpuEnabled = true,        // Enable GPU
-            IsMemoryEnabled = true      // Enable Memory
+            IsMemoryEnabled = true,     // Enable Memory
+
+            //ListAllHardwareForm.cs
+            IsMotherboardEnabled = true,
+            IsControllerEnabled = true,
+            IsNetworkEnabled = true,
+            IsStorageEnabled = true
         };
         private List<GPUdata> gpus = new List<GPUdata>();
         static ManagementObjectSearcher wmiObject =
@@ -48,9 +57,14 @@ namespace HWtest3
         public Form1()
         {
             InitializeComponent();
+            computer.Open();                   //So we are not spaming the computer open and close can create race condishions
             Task.Run(() => { loadValues(); }); //Loads hardware info
-            
+        }
 
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+            computer.Close();       //closes computer when the program exits
         }
         private void timer1_Tick_1(object sender, EventArgs e) //TODO remove this junk
         {
@@ -107,9 +121,8 @@ namespace HWtest3
         }
         private void button3_Click(object sender, EventArgs e)
         {
-            /*this.Hide();
-            Form2 f2 = new Form2();
-            f2.ShowDialog();*/
+            this.WindowState = FormWindowState.Maximized;
+
         }
         // DLL imports
         [DllImport("user32.dll")]
@@ -168,7 +181,9 @@ namespace HWtest3
                 getCPUData();
                 getGPUData();
                 BeginInvoke(new Action(() => { UpdateHardwareMetricsToGUI(); }));
-                Thread.Sleep(refreshRate);
+                do Thread.Sleep(refreshRate);
+                while (isPauseUpating);
+                
                 
             }
             
@@ -179,7 +194,6 @@ namespace HWtest3
         private CPUData cpuData; // Define a field to store the CPU data object
         private void getCPUData()
         {
-            computer.Open();
             float totalLoad = 0f;
             List<float> temperatures = new List<float>();
             string cpuName = "";
@@ -215,7 +229,6 @@ namespace HWtest3
             // Create a new CPUData object with the gathered information
             cpuData = new CPUData(cpuName, (int)totalLoad, averageTemperature, cpuFrequency);
 
-            computer.Close();
            
         }
         private void ShowCpuDataMessageBox()
@@ -256,7 +269,6 @@ namespace HWtest3
         private List<GPUData> gpuDatas = new List<GPUData>(); // List to store data of each GPU
         private void getGPUData()
         {
-            computer.Open();
             gpuDatas.Clear(); // Clear existing GPU data
 
             foreach (var hardwareItem in computer.Hardware)
@@ -309,7 +321,6 @@ namespace HWtest3
             // Sort GPUs putting integrated GPUs (with totalMemory == 0) at the bottom of the list
             gpuDatas = gpuDatas.OrderBy(gpu => gpu.TotalMemory == 0).ToList();
 
-            computer.Close();
             // Populate comboBox1 with GPU names, ensuring it's only done once
             if (!ComboBoxset && gpuDatas.Any())
             {
@@ -352,19 +363,8 @@ namespace HWtest3
                 MessageBox.Show(message, "GPU Data", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
-        //Memory data
-        private MemoryData memData;
-        public class MemoryData
-        {
-            public double TotalMemoryGB { get; set; }
-            public double UsedMemoryGB { get; set; }
-
-            public MemoryData(double totalMemoryGB, double usedMemoryGB)
-            {
-                TotalMemoryGB = totalMemoryGB;
-                UsedMemoryGB = usedMemoryGB;
-            }
-        }
+        
+        
         private void getMemorydata()
         {
             ComputerInfo ci = new ComputerInfo();
@@ -385,8 +385,10 @@ namespace HWtest3
            // MessageBox.Show($"Total Memory: {totalMemoryGB} GB\nUsed Memory: {usedMemoryGB} GB", "Memory Data", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        //Write to GUI
-        private void UpdateHardwareMetricsToGUI()
+        /// <summary>
+        /// Write to UI.
+        /// </summary>
+        private void UpdateHardwareMetricsToGUI() //TODO their is too much math going on here and it couses lag when dragging the UI around invoking the UI thead should only have code relivent to setting the UI, but I am lazy
         {
             // Update CPU Metrics
             if (cpuData != null)
@@ -533,14 +535,9 @@ namespace HWtest3
 
         private void button4_Click(object sender, EventArgs e)
         {
-            timer1.Stop(); 
+            ListAllHardwareForm listAllHardwareForm = new ListAllHardwareForm();
+            listAllHardwareForm.ShowDialog(); // This makes the form modal.
 
-            using (ListAllHardwareForm listAllHardwareForm = new ListAllHardwareForm())
-            {
-                listAllHardwareForm.ShowDialog(); // This makes the form modal.
-            }
-
-            timer1.Start(); 
         }
     }
 
@@ -560,6 +557,17 @@ namespace HWtest3
             TotalLoad = totalLoad;
             AverageTemperature = averageTemperature;
             Frequency = frequency;
+        }
+    }
+    public class MemoryData
+    {
+        public double TotalMemoryGB { get; set; }
+        public double UsedMemoryGB { get; set; }
+
+        public MemoryData(double totalMemoryGB, double usedMemoryGB)
+        {
+            TotalMemoryGB = totalMemoryGB;
+            UsedMemoryGB = usedMemoryGB;
         }
     }
 }

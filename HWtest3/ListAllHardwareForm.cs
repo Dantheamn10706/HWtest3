@@ -15,6 +15,14 @@ namespace HWtest3
             InitializeComponent();
             hardwareComponents = GetHardwareInformation();
             PopulateHardwareInformation();
+            
+            //Form1.isPauseUpating = true; //TODO fix the race condishion with pulling info from the hardware
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+            Form1.isPauseUpating = false;   //unPauses the update loop
         }
 
         private void InitializeComponent()
@@ -63,30 +71,13 @@ namespace HWtest3
 
         private List<HardwareComponent> GetHardwareInformation()
         {
-            var visitor = new UpdateVisitor();
-            var computer = new Computer         //TODO make a static object to prevent runtime errors
-            {
-                IsCpuEnabled = true,
-                IsGpuEnabled = true,
-                IsMemoryEnabled = true,
-                IsMotherboardEnabled = true,
-                IsControllerEnabled = true,
-                IsNetworkEnabled = true,
-                IsStorageEnabled = true
-            };
-
-            try
-            {
-                computer.Open();        //Not a big fan of this try catch but the computer does't have a isOpen() methode.
-            }
-            catch (Exception ex) { System.Console.WriteLine($"Warning: {ex.ToString()}"); }
-                
+            var visitor = new UpdateVisitor();  
             
-            computer.Accept(visitor); // Using the visitor pattern to update all hardware
+            Form1.computer.Accept(visitor); // Using the visitor pattern to update all hardware
 
             var hardwareList = new List<HardwareComponent>();
 
-            foreach (IHardware hardware in computer.Hardware)
+            foreach (IHardware hardware in Form1.computer.Hardware)
             {
                 var hardwareComponent = new HardwareComponent
                 {
@@ -103,8 +94,6 @@ namespace HWtest3
 
                 hardwareList.Add(hardwareComponent);
             }
-
-            computer.Close();
             return hardwareList;
         }
 
@@ -154,33 +143,33 @@ namespace HWtest3
             }
         }
 
-        public class HardwareComponent
+    }
+    public class HardwareComponent
+    {
+        public string Name { get; set; }
+        public List<Sensor> Sensors { get; set; } = new List<Sensor>();
+    }
+
+    public class Sensor
+    {
+        public string Name { get; set; }
+        public string Value { get; set; }
+    }
+
+    public class UpdateVisitor : IVisitor
+    {
+        public void VisitComputer(IComputer computer)
         {
-            public string Name { get; set; }
-            public List<Sensor> Sensors { get; set; } = new List<Sensor>();
+            computer.Traverse(this);
         }
 
-        public class Sensor
+        public void VisitHardware(IHardware hardware)
         {
-            public string Name { get; set; }
-            public string Value { get; set; }
+            hardware.Update();
+            foreach (IHardware subHardware in hardware.SubHardware) subHardware.Accept(this);
         }
 
-        public class UpdateVisitor : IVisitor
-        {
-            public void VisitComputer(IComputer computer)
-            {
-                computer.Traverse(this);
-            }
-
-            public void VisitHardware(IHardware hardware)
-            {
-                hardware.Update();
-                foreach (IHardware subHardware in hardware.SubHardware) subHardware.Accept(this);
-            }
-
-            public void VisitSensor(ISensor sensor) { }
-            public void VisitParameter(IParameter parameter) { }
-        }
+        public void VisitSensor(ISensor sensor) { }
+        public void VisitParameter(IParameter parameter) { }
     }
 }
