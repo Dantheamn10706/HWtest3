@@ -5,7 +5,6 @@ using System.Windows.Forms;
 using LibreHardwareMonitor.Hardware;
 using System.Runtime.InteropServices;
 using HWtest3.Properties;
-using GetCoreTempInfoNET;
 using System.Management;
 using System.IO;
 using System.Diagnostics;
@@ -15,6 +14,8 @@ using System.Linq;
 using System.Text;
 using static HWtest3.Form1;
 using Microsoft.VisualBasic.Devices;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace HWtest3
 {
@@ -23,12 +24,12 @@ namespace HWtest3
     public partial class Form1 : Form
     {
         public Point mouselocation;
-
+        private int refreshRate = 50;  //refresh rate for the UI in ms.
         static LibreHardwareMonitor.Hardware.Computer computer = new LibreHardwareMonitor.Hardware.Computer()
         {
-            IsCpuEnabled = true, // Enable CPU
-            IsGpuEnabled = true, // Enable GPU
-            IsMemoryEnabled = true // Enable Memory
+            IsCpuEnabled = true,        // Enable CPU
+            IsGpuEnabled = true,        // Enable GPU
+            IsMemoryEnabled = true      // Enable Memory
         };
         private List<GPUdata> gpus = new List<GPUdata>();
         static ManagementObjectSearcher wmiObject =
@@ -47,12 +48,13 @@ namespace HWtest3
         public Form1()
         {
             InitializeComponent();
+            Task.Run(() => { loadValues(); }); //Loads hardware info
             
 
         }
-        private void timer1_Tick_1(object sender, EventArgs e)
+        private void timer1_Tick_1(object sender, EventArgs e) //TODO remove this junk
         {
-            loadValues();
+            //loadValues();
         }
         private void Tempchange_Click(object sender, EventArgs e)
         {
@@ -155,33 +157,25 @@ namespace HWtest3
             return isFahrenheit ? "°F" : "°C";
         }
 
-        //Get Hardware data 
+        /// <summary>
+        /// Polls Hardware data and updates UI with said data.
+        /// </summary>
         private void loadValues()
         {
+            while(true) //polls hardware data until app is closed
+            {
+                getMemorydata();
+                getCPUData();
+                getGPUData();
+                BeginInvoke(new Action(() => { UpdateHardwareMetricsToGUI(); }));
+                Thread.Sleep(refreshRate);
+                
+            }
             
-            getMemorydata();
-            getCPUData();
-            getGPUData();
-            UpdateHardwareMetricsToGUI();
             //ShowAllHardwareData();
         }
 
-        //CPU data
-        public class CPUData
-        {
-            public string Name { get; set; }
-            public int TotalLoad { get; set; }
-            public int AverageTemperature { get; set; }
-            public float Frequency { get; set; } // GHz
-
-            public CPUData(string name, int totalLoad, int averageTemperature, float frequency)
-            {
-                Name = name;
-                TotalLoad = totalLoad;
-                AverageTemperature = averageTemperature;
-                Frequency = frequency;
-            }
-        }
+        
         private CPUData cpuData; // Define a field to store the CPU data object
         private void getCPUData()
         {
@@ -539,15 +533,33 @@ namespace HWtest3
 
         private void button4_Click(object sender, EventArgs e)
         {
-            timer1.Stop(); // Assuming timer1 is the System.Windows.Forms.Timer you're referring to
+            timer1.Stop(); 
 
             using (ListAllHardwareForm listAllHardwareForm = new ListAllHardwareForm())
             {
                 listAllHardwareForm.ShowDialog(); // This makes the form modal.
             }
 
-            timer1.Start(); // Resume the timer after closing the modal form
+            timer1.Start(); 
         }
     }
 
+    /// <summary>
+    /// Stores CPU data.
+    /// </summary>
+    public class CPUData
+    {
+        public string Name { get; set; }
+        public int TotalLoad { get; set; }
+        public int AverageTemperature { get; set; }
+        public float Frequency { get; set; } // GHz
+
+        public CPUData(string name, int totalLoad, int averageTemperature, float frequency)
+        {
+            Name = name;
+            TotalLoad = totalLoad;
+            AverageTemperature = averageTemperature;
+            Frequency = frequency;
+        }
+    }
 }

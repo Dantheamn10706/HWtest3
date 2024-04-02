@@ -39,11 +39,8 @@
     <Reference Include="CircularProgressBar, Version=2.8.0.16, Culture=neutral, PublicKeyToken=310fd07b25df79b3, processorArchitecture=MSIL">
       <HintPath>..\packages\CircularProgressBar.2.8.0.16\lib\net40\CircularProgressBar.dll</HintPath>
     </Reference>
-    <Reference Include="CoreTempPluginProxy">
-      <HintPath>..\..\CoreTempSDK\Plugin Framework for .Net\Core Temp Plugin Libraries\v2.0\CoreTempPluginProxy.dll</HintPath>
-    </Reference>
-    <Reference Include="GetCoreTempInfoNET">
-      <HintPath>..\..\CoreTempSDK\Shared Memory Framework for .Net\Shared Memory Libraries\GetCoreTempInfoNET.dll</HintPath>
+    <Reference Include="DocumentFormat.OpenXml, Version=2.18.0.0, Culture=neutral, PublicKeyToken=8fb06cb64d019a17, processorArchitecture=MSIL">
+      <HintPath>..\packages\DocumentFormat.OpenXml.2.18.0\lib\net46\DocumentFormat.OpenXml.dll</HintPath>
     </Reference>
     <Reference Include="HidSharp, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\HidSharp.2.1.0\lib\net35\HidSharp.dll</HintPath>
@@ -61,8 +58,11 @@
       <HintPath>..\packages\MetroModernUI.1.4.0.0\lib\net\MetroFramework.Fonts.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualBasic" />
-    <Reference Include="OpenHardwareMonitorLib">
-      <HintPath>..\..\..\..\..\..\OpenHardwareMonitor\OpenHardwareMonitorLib.dll</HintPath>
+    <Reference Include="MPSTI.PlenoSoft.Core.Office.OpenXml, Version=1.0.0.118, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MPSTI.PlenoSoft.Core.Office.OpenXml.Net4.2.0.0.1\lib\net46\MPSTI.PlenoSoft.Core.Office.OpenXml.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenHardwareMonitorLib, Version=0.9.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenHardwareMonitor.0.9.6\lib\net45\OpenHardwareMonitorLib.dll</HintPath>
     </Reference>
     <Reference Include="ShadowText_Textbox, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Textbox_Controls.1.0\lib\ShadowText_Textbox.dll</HintPath>
@@ -83,6 +83,7 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
     <Reference Include="WinFormAnimation, Version=1.6.0.4, Culture=neutral, PublicKeyToken=310fd07b25df79b3, processorArchitecture=MSIL">
       <HintPath>..\packages\WinFormAnimation.1.6.0.4\lib\net40\WinFormAnimation.dll</HintPath>
     </Reference>

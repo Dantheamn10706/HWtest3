@@ -64,7 +64,7 @@ namespace HWtest3
         private List<HardwareComponent> GetHardwareInformation()
         {
             var visitor = new UpdateVisitor();
-            var computer = new Computer
+            var computer = new Computer         //TODO make a static object to prevent runtime errors
             {
                 IsCpuEnabled = true,
                 IsGpuEnabled = true,
@@ -75,7 +75,13 @@ namespace HWtest3
                 IsStorageEnabled = true
             };
 
-            computer.Open();
+            try
+            {
+                computer.Open();        //Not a big fan of this try catch but the computer does't have a isOpen() methode.
+            }
+            catch (Exception ex) { System.Console.WriteLine($"Warning: {ex.ToString()}"); }
+                
+            
             computer.Accept(visitor); // Using the visitor pattern to update all hardware
 
             var hardwareList = new List<HardwareComponent>();
