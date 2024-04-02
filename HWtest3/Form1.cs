@@ -25,8 +25,8 @@ namespace HWtest3
     {
         public Point mouselocation;
         public static bool isPauseUpating;     //Pauses updating the main window
-        private int refreshRate = 50;  //refresh rate for the UI in ms.
-        private MemoryData memData;    //Memory data
+        private int refreshRate = 250;          //refresh rate for the UI in ms.
+        private MemoryData memData;            //Memory data
 
         public static LibreHardwareMonitor.Hardware.Computer computer = new LibreHardwareMonitor.Hardware.Computer()
         {
@@ -388,7 +388,7 @@ namespace HWtest3
         /// <summary>
         /// Write to UI.
         /// </summary>
-        private void UpdateHardwareMetricsToGUI() //TODO their is too much math going on here and it couses lag when dragging the UI around invoking the UI thead should only have code relivent to setting the UI, but I am lazy
+        private void UpdateHardwareMetricsToGUI() 
         {
             // Update CPU Metrics
             if (cpuData != null)

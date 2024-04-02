@@ -15,8 +15,7 @@ namespace HWtest3
             InitializeComponent();
             hardwareComponents = GetHardwareInformation();
             PopulateHardwareInformation();
-            
-            //Form1.isPauseUpating = true; //TODO fix the race condishion with pulling info from the hardware
+            Form1.isPauseUpating = true; //TODO fix the race condishion with pulling info from the hardware
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
